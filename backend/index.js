@@ -21,46 +21,42 @@ const pgClient = new Pool({
   port: keys.pgPort
 })
 
-pgClient.on('error', () => console.log('Lost connection to PG'))
+pgClient.on('error', () => console.log('Cannot connect to PG'))
 
-pgClient.query('CREATE TABLE IF NOT EXISTS values (number INT)').catch(err => console.log(err));
+pgClient.query('CREATE TABLE IF NOT EXISTS values (a INT, b INT, c INT, delta INT)').catch(err => console.log(err));
 
 const client = redis.createClient({
   host: keys.redisHost,
   port: keys.redisPort
 });
 
-app.get('/nwd', (req, res) => {
-  const key = `GCD(${req.query.l1},${req.query.l2})`;
-  client.get(key, async (err, value) => {
-    if (!value) {
-      console.log('GCD not found in cache');
-      const gcd = gcd_rec(parseInt(req.query.l1), parseInt(req.query.l2));
-      client.set(key, parseInt(gcd));
-      const query = `INSERT INTO values(number) VALUES (${gcd})`;
-      console.log(query)
-      pgClient.query(query)
-      res.send({gcd});
-    }
-    else {
-      console.log('Sending GCD from cache');
-      res.send({gcd: value});
-    }
-  })
+app.get('/delta', (req, res) => {
+  const a = req.query.a;
+  const b = req.query.b;
+  const c = req.query.c;
+  
+  const key = `${a}_${b}_${c}`;
+  
+	client.exists(key, (err, exists) => {
+		if (exists === 1) {
+			client.get(key, (err, result) => {
+				res.send(`${result} (cached)`);
+				return;
+			});
+		} else {
+			const result = b * b - 4 * a *c;
+			client.set(key, result);
+			pgClient.query(`INSERT INTO values (a, b, c, delta) VALUES (${a}, ${b}, ${c}, ${result})`, (err) => {console.log(err)});
+			res.send(`${result}`);
+		}
+	});
 });
 
-app.get('/results', async (req, res) => {
-  const result = await pgClient.query('SELECT * FROM values');
-  res.send({gcd: result.rows})
+app.get("/values", (req, res) => {
+	pgClient.query("SELECT * FROM values;")
+		.then(result => res.send(result.rows))
+		.catch(err => console.log(err));
 });
-
-function gcd_rec(a, b) {
-    if (b) {
-        return gcd_rec(b, a % b);
-    } else {
-        return Math.abs(a);
-    }
-}
 
 app.listen(5000, err => {
   console.log('Backend listening');
