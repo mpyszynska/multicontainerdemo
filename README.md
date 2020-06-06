@@ -26,7 +26,7 @@ IMAGE                          CONTAINER
 PLIK
 
  FS   ######   CMD   ###   </br>
-   /var/lib    echo Hello
+   /var/lib    echo Hello   </br>
 #############################   
    
    
