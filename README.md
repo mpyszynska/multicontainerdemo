@@ -25,7 +25,7 @@ IMAGE                          CONTAINER
 "BINARKA"                      Uruchomiony jest procesem     
 PLIK
 
- ###  FS   ######   CMD   ###
+ FS   ######   CMD   ###
    /var/lib    echo Hello
 #############################   
    
@@ -66,7 +66,7 @@ c) STDERR
 * docker exec -it CONTAINER_ID : daje nam pseudoTerminal 
 
 
-# TWORZENIE IMAGE #   
+TWORZENIE IMAGE 
 
 * vi Dockerfile
 * 
@@ -106,7 +106,7 @@ npm init -v (stworzenie aplikacji node)
 
 yarn dev : uruchomienie 
 
-######################################################################################################################################################################################################
+#############################################################################################################################################################################################
 
 1. instalacja minikube
 2. mozna tez w docker desktop enable kubernetes
