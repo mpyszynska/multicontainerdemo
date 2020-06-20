@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+  my-postgres-server:
+    image: 'postgres:latest'
+    environment:
+      - POSTGRES_PASSWORD=${PG_PASSWORD}
+
+  my-redis-server:
+    image: 'redis:latest'
+
+  my-backend:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./backend
+    volumes:
+      - /opt/app/node_modules
+      - ./backend:/opt/app
+    ports:
+      - '5000:5000'
+    environment:
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - PG_HOST=${PG_HOST}
+      - PG_USER=${PG_USER}
+      - PG_DATABASE=${PG_DATABASE}
+      - PG_PASSWORD=${PG_PASSWORD}
+      - PG_PORT=${PG_PORT}
+
+  my-frontend:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./frontend
+    volumes:
+      - /opt/app/node_modules
+      - ./frontend:/opt/app
+    tty: true
+
+  nginx:
+    restart: always
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./nginx
+    ports:
+      - '8080:80'
